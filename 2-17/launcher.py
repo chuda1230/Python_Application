@@ -32,9 +32,9 @@ def launcherFunction(menu):
         #isbn = 11110003
         #11110006
         #11200003
-        ret = getChargerDataFromstatid(addr)
+        getChargerDataFromstatid(addr)
         #AddBook(ret)
-        print(ret)
+        #print(ret)
     elif menu == 'm':
         keyword = str(input ('input keyword code to the html  :'))
         html = MakeHtmlDoc(SearchBookTitle(keyword))

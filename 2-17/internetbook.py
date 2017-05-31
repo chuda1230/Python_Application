@@ -59,16 +59,19 @@ def SearchChargerData(strxml,keyword):
     chargerElements = tree.getiterator("body")  # return list type
     for data in chargerElements:
         for item in data:
-                c=0
                 for i in item:
                         strTitle = i.find("addrDoro")
                         strNm=i.find("statNm")
-                            strtime=i.find("useTime")
+                        strtime=i.find("useTime")
                         if (strTitle.text.find(keyword) >= 0):
-                                retlist.append((strNm.text))
-                                retlist.append((strTitle.text))
-                                    retlist.append((strtime.text))
-        return retlist
+                                #retlist.append((strNm.text))
+                                #retlist.append((strTitle.text))
+                                #retlist.append((strtime.text))
+                                if strtime != None:
+                                    print ({"이름": strNm.text , "주소": strTitle.text , "이용시간" : strtime.text})
+                                else:
+                                    print({"이름": strNm.text, "주소": strTitle.text})
+        #return retlist
 
     # for item in chargerElements:
     #             print("test")
