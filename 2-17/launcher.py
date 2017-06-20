@@ -12,18 +12,10 @@ def printMenu():
     print("========Menu==========")
     
 def launcherFunction(menu):
-    if menu ==  'l':
-        LoadXMLFromFile()
-    elif menu == 'q':
+    if menu == 'q':
         QuitBookMgr()
     elif menu == 'p':
         PrintDOMtoXML()
-    elif menu == 'b':
-        PrintBookList(["title",])
-    elif menu == 'a':
-        ISBN = str(input ('insert ISBN :'))
-        title = str(input ('insert Title :'))
-        AddBook({'ISBN':ISBN, 'title':title})
     elif menu == 'e':
         keyword = str(input ('input keyword to search :'))
         printBookList(SearchBookTitle(keyword))

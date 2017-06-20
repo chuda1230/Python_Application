@@ -1,5 +1,7 @@
 # -*- coding: cp949 -*-
+import spam
 from xmlbook import *
+from map import *
 from http.client import HTTPConnection
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -27,7 +29,7 @@ def connectOpenAPIServer():
     global conn, server
     conn = HTTPConnection(server)
 
-def getChargerDataFromstatid(addr):
+def getChargerDataFromstatid(type,addr):
     global server, regKey, conn
     if conn == None :
         connectOpenAPIServer()
@@ -40,17 +42,51 @@ def getChargerDataFromstatid(addr):
     if int(req.status) == 200 :
         print("Charger data downloading complete!")
         #return extractChargerData(req.read().decode('utf-8'))
-        return SearchChargerData(req.read().decode('utf-8'),addr)
+        if(type==7):
+            return SearchChargerMap(req.read().decode('utf-8'), addr, type)
+        else:
+            return SearchChargerData(req.read().decode('utf-8'),addr,type)
     else:
         print ("OpenAPI request has been failed!! please retry")
         return None
 
-def SearchChargerData(strxml,keyword):
+def SearchChargerMap(strxml,keyword,type):
     from xml.etree import ElementTree
     retlist = []
     try:
         tree = ElementTree.fromstring(strxml)
-        print(strxml)
+        # print(strxml)
+    except Exception:
+        print("Element Tree parsing Error : maybe the xml document is not corrected.")
+        return None
+
+        # get Book Element
+    chargerElements = tree.getiterator("body")  # return list type
+    for data in chargerElements:
+        for item in data:
+            for i in item:
+                strid = i.find("statId")
+                exid=str(strid.text)
+                strlat = i.find("lat")
+                strlng = i.find("lng")
+                intlat = float(strlat.text)
+                intlng = float(strlng.text)
+                if(spam.strcmp(exid, keyword)==0):
+                    # retlist.append((strNm.text))
+                    # retlist.append((strTitle.text))
+                    # retlist.append((strtime.text))
+                            retlist.append(intlat)
+                            retlist.append(intlng)
+                            print(retlist)
+    GetMap(retlist)
+
+
+def SearchChargerData(strxml,keyword,type):
+    from xml.etree import ElementTree
+    retlist = []
+    try:
+        tree = ElementTree.fromstring(strxml)
+        #print(strxml)
     except Exception:
             print("Element Tree parsing Error : maybe the xml document is not corrected.")
             return None
@@ -63,15 +99,27 @@ def SearchChargerData(strxml,keyword):
                         strTitle = i.find("addrDoro")
                         strNm=i.find("statNm")
                         strtime=i.find("useTime")
+                        strtype=i.find("chgerType")
+                        strid=i.find('statId')
+                        inttype=int(strtype.text)
                         if (strTitle.text.find(keyword) >= 0):
                                 #retlist.append((strNm.text))
                                 #retlist.append((strTitle.text))
                                 #retlist.append((strtime.text))
-                                if strtime != None:
-                                    print ({"이름": strNm.text , "주소": strTitle.text , "이용시간" : strtime.text})
-                                else:
-                                    print({"이름": strNm.text, "주소": strTitle.text})
-        #return retlist
+                                if(inttype>=type):
+                                    if strtime != None:
+                                        print ({"이름": strNm.text , "주소": strTitle.text , "이용시간" : strtime.text})
+                                        retlist.append((strNm.text))
+                                        retlist.append((strTitle.text))
+                                        retlist.append((strtime.text))
+                                        retlist.append((strid.text))
+                                    else:
+                                        print({"이름": strNm.text, "주소": strTitle.text})
+                                        retlist.append((strNm.text))
+                                        retlist.append((strTitle.text))
+                                        retlist.append((strid.text))
+
+        return retlist
 
     # for item in chargerElements:
     #             print("test")
@@ -98,19 +146,14 @@ def extractChargerData(strXml,keyword):
         if len(strstatNm.text) > 0 :
            return {"addrDoro":straddr.text,"statNm":strstatNm.text}
 
-def sendMain():
+def sendMain(recipientAddr,type,keyword):
     global host, port
     html = ""
-    title = str(input ('제목 :'))
-    senderAddr = str(input ('보내는 사람 이메일(g메일) :'))
-    recipientAddr = str(input ('받는 사람 이메일 :'))
-    msgtext = str(input ('내용입력 :'))
-    passwd = str(input (' 당신의 g메일 계정 비밀번호를 입력해주세요 :'))
-    msgtext = str(input ('충전소 데이터를 입력할까요 (y/n):'))
-    if msgtext == 'y' :
-        keyword = str(input ('키워드를 입력해주세요:'))
-        waterhead=1
-        html = MakeHtmlDoc(getChargerDataFromstatid(waterhead,keyword))
+    title = "충전소 데이터입니다."
+    senderAddr = "chuda235@gmail.com"
+    msgtext = "충전소데이터입니다."
+    passwd = "tkdgh2558"
+    html = MakeHtmlDoc(getChargerDataFromstatid(type,keyword))
         #html = MakeHtmlDoc(SearchChargerData(waterhead,keyword))
     
     import mysmtplib
